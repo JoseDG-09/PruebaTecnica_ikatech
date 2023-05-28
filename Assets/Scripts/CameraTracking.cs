@@ -6,6 +6,7 @@ public class CameraTracking : MonoBehaviour
 {
     [SerializeField] private Transform player = null;
 
+    
     void Update()
     {
         this.transform.rotation = player.rotation;

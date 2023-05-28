@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,6 +14,8 @@ public class PlayerController : MonoBehaviour
     private Vector3 direction = Vector3.zero;
     private Rigidbody _rigidbody = null;
     private bool _jump = true;
+    public TMP_Text scoreText;
+    private int amountCoins;
 
     private void OnEnable()
     {
@@ -33,6 +36,12 @@ public class PlayerController : MonoBehaviour
 
         _playerControls.Gameplay.Jump.performed += JumpPlayer;
         _playerControls.Gameplay.Jump.canceled += JumpPlayer;
+    }
+
+    private void Start()
+    {
+        amountCoins = PlayerPrefs.GetInt("Score", 0);
+        scoreText.text = amountCoins.ToString();
     }
 
     void Update()
@@ -57,9 +66,9 @@ public class PlayerController : MonoBehaviour
 
     private void JumpPlayer(InputAction.CallbackContext context)
     {
-        if (_jump == true)
+        if (_jump == false)
         {
-            _jump = false;
+            _jump = true;
             var input = context.ReadValue<float>();
             _rigidbody.AddForce(Vector3.up * input * force);
         }
@@ -67,9 +76,22 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionStay(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Floor") && _jump == false)
+        if (collision.gameObject.CompareTag("Floor") && _jump == true)
         {
-            _jump = true;
+            _jump = false;
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Coin"))
+        {
+            amountCoins = PlayerPrefs.GetInt("Score");
+            amountCoins ++;
+            PlayerPrefs.SetInt("Score", amountCoins);
+            other.gameObject.SetActive(false);
+            SpawnCoins.instance.SpawnObject();
+            scoreText.text = amountCoins.ToString();
         }
     }
 }

@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 direction = Vector3.zero;
     private Rigidbody _rigidbody = null;
     private bool _jump = true;
+    public GameObject panelPause;
     public TMP_Text scoreText;
     private int amountCoins;
 
@@ -36,6 +37,9 @@ public class PlayerController : MonoBehaviour
 
         _playerControls.Gameplay.Jump.performed += JumpPlayer;
         _playerControls.Gameplay.Jump.canceled += JumpPlayer;
+        
+        _playerControls.Gameplay.Pause.performed += PauseGame;
+        _playerControls.Gameplay.Pause.canceled += PauseGame;
     }
 
     private void Start()
@@ -74,6 +78,26 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void PauseGame(InputAction.CallbackContext context)
+    {
+        panelPause.SetActive(true);
+        Time.timeScale = 0;
+    }
+
+    public void RegisterCoin()
+    {
+        amountCoins = PlayerPrefs.GetInt("Score");
+        amountCoins++;
+        PlayerPrefs.SetInt("Score", amountCoins);
+        SpawnCoins.instance.SpawnObject();
+        scoreText.text = amountCoins.ToString();
+        if (amountCoins == 20)
+        {
+            GameManager.instance.LoadScene(2);
+            PlayerPrefs.SetInt("Score", 0);
+        }
+    }
+
     private void OnCollisionStay(Collision collision)
     {
         if (collision.gameObject.CompareTag("Floor") && _jump == true)
@@ -86,12 +110,8 @@ public class PlayerController : MonoBehaviour
     {
         if (other.CompareTag("Coin"))
         {
-            amountCoins = PlayerPrefs.GetInt("Score");
-            amountCoins ++;
-            PlayerPrefs.SetInt("Score", amountCoins);
+            RegisterCoin();
             other.gameObject.SetActive(false);
-            SpawnCoins.instance.SpawnObject();
-            scoreText.text = amountCoins.ToString();
         }
     }
 }
